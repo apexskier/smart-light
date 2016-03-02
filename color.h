@@ -1,9 +1,9 @@
 // Color types
 // Each component should be from 0 to 255
 struct rgb_color {
-    byte b;
-    byte g;
     byte r;
+    byte g;
+    byte b;
 };
 
 struct hsv_color {

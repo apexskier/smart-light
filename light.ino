@@ -16,6 +16,8 @@ const char* password = "not my real password";
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP udp;
 
+void (*void_function)();
+
 
 // Time syncronizing stuff
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
@@ -32,6 +34,8 @@ void colorLoopCall();
 
 void startTransition(rgb_color to, unsigned long duration);
 void startSunrise(unsigned long duration);
+void startTestSunrise();
+void wakeupAlarm();
 void writeOff();
 void writeColor(rgb_color color);
 uint scaledPWM(float intensity);
@@ -72,9 +76,6 @@ void setup() {
 
   // Set PWM max to 255, to match color vals exactly. Easier processing
   analogWriteRange(PWMRANGE_CUSTOM);
-
-  Serial.print("PWMRANGE_CUSTOM: ");
-  Serial.println(PWMRANGE_CUSTOM, DEC);
 
   writeOff();
 
@@ -130,7 +131,21 @@ void setup() {
   // setup time
   setupTime();
 
-  startSunrise(5000);
+  Alarm.timerRepeat(10, startTestSunrise);
+
+  Alarm.alarmRepeat(dowMonday, 6, 0, 0, wakeupAlarm);
+  Alarm.alarmRepeat(dowTuesday, 6, 0, 0, wakeupAlarm);
+  Alarm.alarmRepeat(dowWednesday, 6, 0, 0, wakeupAlarm);
+  Alarm.alarmRepeat(dowThursday, 6, 0, 0, wakeupAlarm);
+  Alarm.alarmRepeat(dowFriday, 6, 0, 0, wakeupAlarm);
+}
+
+void startTestSunrise() {
+  Serial.println("Timer test");
+}
+
+void wakeupAlarm() {
+  startSunrise(1000 * 60 * 30);
 }
 
 void loop() {
@@ -154,9 +169,9 @@ void touchLoopCall() {
       }
 
       state = int(current_millis <= lastTouch | state == OFF_STATE) * (state + 1) % DIM_STATES;
-      byte intensity = byte(float(state) / float(DIM_STATES - 1) * 255);
+      byte intensity = byte(scaledPWM(float(state) / float(DIM_STATES - 1)));
       rgb_color newColor = (rgb_color) {intensity, intensity, intensity};
-      startTransition(newColor, 1000);
+      startTransition(newColor, 500);
     }
 
     if (touching) {
@@ -194,6 +209,10 @@ void colorLoopCall() {
 
     writeColor(newColor);
   } else if (!equals(transitionEndColor, currentColor)) {
+    Serial.print("transition: ");
+    Serial.print(100);
+    Serial.print("%, ");
+    Serial.println(rgb_to_hex(transitionEndColor), HEX);
     writeColor(transitionEndColor);
   }
 }
@@ -209,6 +228,9 @@ void startSunrise(unsigned long duration) {
   transitionStartTime = current_millis;
   transitionEndTime = current_millis + duration;
   state = SUNRISE_STATE;
+  transitionStartColor = currentColor;
+  transitionEndColor = {255, 255, 255};
+  Serial.println("Started sunrise");
 }
 
 void writeOff() {

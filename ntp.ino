@@ -58,6 +58,8 @@ void timeLoopCall() {
       setTime(epoch);
     }
   }
+
+  Alarm.delay(0);
 }
 
 // send an NTP request to the time server at the given address
