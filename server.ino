@@ -9,9 +9,12 @@ void handleRoot() {
     message +=    "\"b\":" + String(currentColor.b);
     message +=  "},";
     message +=  "\"on\":";
-    message += (equals(currentColor, blackColor) ? "true" : "false");
-    message += ",";
-    message += "\"time\": \"";
+    message +=  (equals(currentColor, blackColor) ? "true" : "false");
+    message +=  ",";
+    message +=  "\"state\":";
+    message +=  state;
+    message +=  ","
+    message +=  "\"time\": \"";
       message += year();
       message += '-';
       message += month();
@@ -102,7 +105,7 @@ void handleColor() {
 void handleOff() {
   String message = "{";
   unsigned long duration = 0;
-  
+
   uint8_t numArgs = server.args();
   if (numArgs > 0) {
     for (uint8_t i = 0; i < numArgs; i++) {
@@ -121,7 +124,7 @@ void handleOff() {
 
   state = OFF_STATE;
   startTransition({0, 0, 0}, duration);
-  
+
   message += "\"success\":true";
   message += "}";
   server.send(200, "application/json", message);
@@ -130,7 +133,7 @@ void handleOff() {
 void handleStartAlarm() {
   String message = "{";
   unsigned long duration = 1000 * 60 * 30;
-  
+
   uint8_t numArgs = server.args();
   if (numArgs > 0) {
     for (uint8_t i = 0; i < numArgs; i++) {
@@ -146,9 +149,9 @@ void handleStartAlarm() {
       }
     }
   }
-  
+
   startSunrise(duration);
-  
+
   message += "\"success\": true";
   message += "}";
   server.send(200, "application/json", message);

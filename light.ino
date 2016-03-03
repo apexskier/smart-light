@@ -90,6 +90,7 @@ void setup() {
   // Set PWM max to 255, to match color vals exactly. Easier processing
   analogWriteRange(PWMRANGE_CUSTOM);
 
+  delay(1000); // Wait a moment before starting up
   testColorSequence();
 
   // connecting to a WiFi network
@@ -121,8 +122,8 @@ void setup() {
 
   // webserver routing
   server.on("/", handleRoot);
-  server.on("/color/off", handleOff);
-  server.on("/alarm/start", handleStartAlarm);
+  server.on("/off", handleOff);
+  server.on("/sunrise", handleStartAlarm);
   server.on("/color", handleColor);
   server.onNotFound(handle404);
   server.begin();
@@ -134,7 +135,7 @@ void setup() {
   Alarm.alarmRepeat(dowWednesday, 6, 0, 0, wakeupAlarm);
   Alarm.alarmRepeat(dowThursday, 6, 0, 0, wakeupAlarm);
   Alarm.alarmRepeat(dowFriday, 6, 0, 0, wakeupAlarm);
-  
+
   Alarm.alarmRepeat(dowThursday, 7, 10, 0, wakeupAlarm);
 }
 
@@ -208,7 +209,7 @@ void colorLoopCall() {
     Serial.print(100);
     Serial.print("%, ");
     Serial.println(rgb_to_hex(transitionEndColor), HEX);
-    
+
     writeColor(transitionEndColor);
   }
 }
