@@ -1,4 +1,6 @@
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <TimeLib.h>
 #include <TimeAlarms.h>
@@ -16,6 +18,9 @@ const char* password = "not my real password";
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP udp;
 
+// A webserver
+ESP8266WebServer server(80);
+
 void (*void_function)();
 
 
@@ -27,9 +32,14 @@ void setupTime();
 unsigned long sendNTPpacket(IPAddress& address);
 void syncTimeStart();
 void timeLoopCall();
+void testColorSequence();
 
 void touchLoopCall();
 void colorLoopCall();
+
+
+void handle404();
+void handleRoot();
 
 
 void startTransition(rgb_color to, unsigned long duration);
@@ -77,41 +87,12 @@ void setup() {
   // Set PWM max to 255, to match color vals exactly. Easier processing
   analogWriteRange(PWMRANGE_CUSTOM);
 
-  writeOff();
-
-  writeColor(hex_to_rgb(0xff0000));
-  delay(1000);
-  writeColor(hex_to_rgb(0x00ff00));
-  delay(1000);
-  writeColor(hex_to_rgb(0x0000ff));
-  delay(1000);
-
-  writeColor(hex_to_rgb(0xffff00));
-  delay(1000);
-  writeColor(hex_to_rgb(0xff00ff));
-  delay(1000);
-  writeColor(hex_to_rgb(0x00ffff));
-  delay(1000);
-
-  writeColor(hex_to_rgb(0xffffff));
-  delay(200);
-  writeColor(hex_to_rgb(0xcccccc));
-  delay(200);
-  writeColor(hex_to_rgb(0x999999));
-  delay(200);
-  writeColor(hex_to_rgb(0x666666));
-  delay(200);
-  writeColor(hex_to_rgb(0x333333));
-  delay(200);
-  writeColor(hex_to_rgb(0x000000));
-  delay(200);
-
-  writeOff();
+  testColorSequence();
 
   // We start by connecting to a WiFi network
   Serial.print("Connecting to ");
   Serial.println(ssid);
-  WiFi.begin(ssid, pass);
+  WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
     Alarm.delay(500);
@@ -128,8 +109,16 @@ void setup() {
   Serial.print("Local port: ");
   Serial.println(udp.localPort());
 
-  // setup time
   setupTime();
+
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder started");
+  }
+
+  server.on("/", handleRoot);
+  server.onNotFound(handle404);
+  server.begin();
+  Serial.println("HTTP server started");
 
   Alarm.timerRepeat(10, startTestSunrise);
 
@@ -140,21 +129,14 @@ void setup() {
   Alarm.alarmRepeat(dowFriday, 6, 0, 0, wakeupAlarm);
 }
 
-void startTestSunrise() {
-  Serial.println("Timer test");
-}
-
-void wakeupAlarm() {
-  startSunrise(1000 * 60 * 30);
-}
-
 void loop() {
   // put your main code here, to run repeatedly:
   current_millis = millis();
 
-  timeLoopCall();
-  touchLoopCall();
-  colorLoopCall();
+  timeLoopCall(); // logic to update current time asyncronously
+  touchLoopCall(); // logic to handle touches
+  colorLoopCall(); // logic to fade between colors
+  server.handleClient(); // webserver
 }
 
 void touchLoopCall() {
@@ -213,6 +195,7 @@ void colorLoopCall() {
     Serial.print(100);
     Serial.print("%, ");
     Serial.println(rgb_to_hex(transitionEndColor), HEX);
+    
     writeColor(transitionEndColor);
   }
 }
@@ -231,6 +214,14 @@ void startSunrise(unsigned long duration) {
   transitionStartColor = currentColor;
   transitionEndColor = {255, 255, 255};
   Serial.println("Started sunrise");
+}
+
+void startTestSunrise() {
+  Serial.println("Timer test");
+}
+
+void wakeupAlarm() {
+  startSunrise(1000 * 60 * 30);
 }
 
 void writeOff() {
@@ -255,5 +246,38 @@ uint scaledPWM(float intensity) {
 
 uint linearPWM(float intensity) {
   return uint(double(PWMRANGE_CUSTOM) * intensity);
+}
+
+void testColorSequence() {
+  writeOff();
+
+  writeColor(hex_to_rgb(0xff0000));
+  delay(1000);
+  writeColor(hex_to_rgb(0x00ff00));
+  delay(1000);
+  writeColor(hex_to_rgb(0x0000ff));
+  delay(1000);
+
+  writeColor(hex_to_rgb(0xffff00));
+  delay(1000);
+  writeColor(hex_to_rgb(0xff00ff));
+  delay(1000);
+  writeColor(hex_to_rgb(0x00ffff));
+  delay(1000);
+
+  writeColor(hex_to_rgb(0xffffff));
+  delay(200);
+  writeColor(hex_to_rgb(0xcccccc));
+  delay(200);
+  writeColor(hex_to_rgb(0x999999));
+  delay(200);
+  writeColor(hex_to_rgb(0x666666));
+  delay(200);
+  writeColor(hex_to_rgb(0x333333));
+  delay(200);
+  writeColor(hex_to_rgb(0x000000));
+  delay(200);
+
+  writeOff();
 }
 
