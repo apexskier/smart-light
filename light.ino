@@ -34,6 +34,9 @@ void testColorSequence();
 
 // Web server functions (server.ino)
 void handle404();
+void handleColor();
+void handleOff();
+void handleStartAlarm();
 void handleRoot();
 
 // LED manipulation over PWM
@@ -54,9 +57,11 @@ unsigned long transitionEndTime = 0;
 void touchLoopCall();
 
 // lamp states
-const int DIM_STATES = 8;
+const int DIM_STATES = 6;
 const int OFF_STATE = 0;
-const int SUNRISE_STATE = -1;
+const int INVALID_STATE = -1;
+const int SUNRISE_STATE = -2;
+const int CUSTOM_STATE = -3;
 int state = 0;
 
 // globals to handle touch sensor
@@ -116,6 +121,9 @@ void setup() {
 
   // webserver routing
   server.on("/", handleRoot);
+  server.on("/color/off", handleOff);
+  server.on("/alarm/start", handleStartAlarm);
+  server.on("/color", handleColor);
   server.onNotFound(handle404);
   server.begin();
   Serial.println("HTTP server started");
@@ -126,6 +134,8 @@ void setup() {
   Alarm.alarmRepeat(dowWednesday, 6, 0, 0, wakeupAlarm);
   Alarm.alarmRepeat(dowThursday, 6, 0, 0, wakeupAlarm);
   Alarm.alarmRepeat(dowFriday, 6, 0, 0, wakeupAlarm);
+  
+  Alarm.alarmRepeat(dowThursday, 7, 10, 0, wakeupAlarm);
 }
 
 void loop() {
