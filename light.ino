@@ -90,9 +90,10 @@ void setup() {
 
   // Set PWM max to 255, to match color vals exactly. Easier processing
   analogWriteRange(PWMRANGE_CUSTOM);
-
-  delay(1000); // Wait a moment before starting up
-  testColorSequence();
+  
+  writeOff();
+  delay(5000); // Wait a moment before starting up
+  //testColorSequence();
 
   // connecting to a WiFi network
   Serial.print("Connecting to ");
@@ -138,7 +139,7 @@ void setup() {
   Alarm.alarmRepeat(dowThursday, 6, 0, 0, wakeupAlarm);
   Alarm.alarmRepeat(dowFriday, 6, 0, 0, wakeupAlarm);
 
-  Alarm.alarmRepeat(dowThursday, 7, 10, 0, wakeupAlarm);
+  Alarm.alarmRepeat(dowThursday, 20, 30, 0, wakeupAlarm);
 }
 
 void loop() {

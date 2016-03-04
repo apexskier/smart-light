@@ -2,108 +2,176 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<title>Smart Light</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>💡</title>
 	<style>
 	body {
-		font-family: sans-serif;
+		font-family: -apple-system, "Helvetica Neue", "Lucida Grande", sans-serif;
 		color: #222;
 		padding: 10px 15px;
+		font-size: 28px;
 	}
-	.lightbox-container {
+	h1 {
+		font-size: 30px;
+		margin-top: 0;
+	}
+	p {
+		margin-top: 0;
+		margin-bottom: .5em;
+		text-align: center;
+	}
+	.lb-c {
 		width: 100%;
 		text-align: center;
 		margin-bottom: 10px;
 	}
-	#lightbox {
+	#lb {
 		margin: 0 auto;
 		height: 100px;
 		width: 100px;
 		border-radius: 4px;
 		border: 1px solid #222;
+		background-color: rgb(INITIAL_R, INITIAL_G, INITIAL_B);
 	}
-	#preview {
+	#pv {
 		display: inline-block;
 		background-color: rgb(255, 255, 255);
 		height: 1em;
-		width: 1em;
-		margin-left: .5em;
+		width: 50%;
+		border-radius: 4px;
 		vertical-align: text-bottom;
 	}
-	#message {
+	#msg {
 		border-radius: 2px;
 		background-color: rgb(255, 205, 205);
 		color: rgb(158, 0, 0);
 		border: 1px solid;
 		padding: 4px 8px;
 		display: none;
+		font-size: 18px;
+		text-align: left;
+	}
+	input[type=range] {
+		-webkit-appearance: none;
+		width: 100%;
+		margin-bottom: 12px;
+	}
+	input[type=range]:focus {
+		outline: none;
+	}
+	input[type=range]::-webkit-slider-runnable-track {
+		width: 100%;
+		height: 4px;
+		border-radius: 2px;
+		cursor: pointer;
+		background: #999;
+		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+	}
+	input[type=range]::-webkit-slider-thumb {
+		box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+		height: 24px;
+		width: 24px;
+		border-radius: 12px;
+		background: #aaa;
+		cursor: pointer;
+		-webkit-appearance: none;
+		margin-top: -10px;
+		background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
+	}
+	input[type=range]:focus::-webkit-slider-runnable-track {
+		background: #222;
+	}
+	input#red[type=range]::-webkit-slider-thumb {
+		border: 1px solid #aa0000;
+		background-color: #ff0000;
+	}
+	input#green[type=range]::-webkit-slider-thumb {
+		border: 1px solid #00aa00;
+		background-color: #00ff00;
+	}
+	input#blue[type=range]::-webkit-slider-thumb {
+		border: 1px solid #0000aa;
+		background-color: #0000ff;
 	}
 	</style>
 </head>
 <body>
-	<h1>Smart Light</h1>
-	<p id="message"></p>
-	<div class="lightbox-container">
-		<div id="lightbox"></div>
+	<h1>Smart Light &#128161;</h1>
+	<p id="msg"></p>
+	<div class="lb-c">
+		<div id="lb"></div>
 	</div>
-	<p><button id="turnOff">Off</button> <button id="refresh">Refresh</button></p>
 	<p>
-		Red <input id="red" value="255" type="range" step="1" min="0" max="255"><br>
-		Green <input id="green" value="255" type="range" step="1" min="0" max="255"><br>
-		Blue <input id="blue" value="255" type="range" step="1" min="0" max="255"><br>
+		<input id="red" value="255" type="range" step="1" min="0" max="255"><br>
+		<input id="green" value="255" type="range" step="1" min="0" max="255"><br>
+		<input id="blue" value="255" type="range" step="1" min="0" max="255"><br>
 	</p>
-	<p><button id="setButton">Set</button> <span id="preview"></span></p>
+	<p class="ctl">
+		<span id="turnOff">&#128244;</span>
+		&nbsp;&nbsp;
+		<span id="refresh">&#128260;</span>
+		&nbsp;&nbsp;
+		<span id="setbtn">&#10024;</span>
+	</p>
+	<p>
+		<span id="pv"></span>
+	</p>
 	<script>
-	var lightbox = document.getElementById('lightbox');
-	var message = document.getElementById('message');
-	var preview = document.getElementById('preview');
-	var redSlider = document.getElementById('red');
-	var blueSlider = document.getElementById('blue');
-	var greenSlider = document.getElementById('green');
+	var lb = document.getElementById('lb');
+	var msg = document.getElementById('msg');
+	var pv = document.getElementById('pv');
+	var rs = document.getElementById('red');
+	var bs = document.getElementById('blue');
+	var gs = document.getElementById('green');
 
-	var offButton = document.getElementById('turnOff');
-	var refreshButton = document.getElementById('refresh');
-	var setButton = document.getElementById('setButton');
+	var offbtn = document.getElementById('turnOff');
+	var refreshbtn = document.getElementById('refresh');
+	var setbtn = document.getElementById('setbtn');
 
 	var newColor = [255,255,255];
 
-	function setPreview() {
-		preview.style.backgroundColor = 'rgb(' + newColor[0] + ',' + newColor[1] + ',' + newColor[2] + ')';
+	function setpv() {
+		pv.style.backgroundColor = 'rgb(' + newColor[0] + ',' + newColor[1] + ',' + newColor[2] + ')';
 	}
-	redSlider.addEventListener('input', function(e) {
+	rs.addEventListener('input', function(e) {
 		newColor[0] = e.target.value;
-		setPreview();
+		setpv();
 	});
-	greenSlider.addEventListener('input', function(e) {
+	gs.addEventListener('input', function(e) {
 		newColor[1] = e.target.value;
-		setPreview();
+		setpv();
 	});
-	blueSlider.addEventListener('input', function(e) {
+	bs.addEventListener('input', function(e) {
 		newColor[2] = e.target.value;
-		setPreview();
+		setpv();
 	});
 
-	offButton.addEventListener('click', function(e) {
-		ajax('POST', '/off?duration=1000', update, error);
+	offbtn.addEventListener('click', function(e) {
+		ajax('POST', '/off?duration=1000', function() {
+			lb.style.backgroundColor = 'rgb(0, 0, 0)';
+		}, error);
 	});
 
-	setButton.addEventListener('click', function(e) {
-		ajax('POST', '/color?r=' + newColor[0] + '&g=' + newColor[1] + '&b=' + newColor[2] + '&duration=1000', update, error);
+	setbtn.addEventListener('click', function(e) {
+		ajax('POST', '/color?r=' + newColor[0] + '&g=' + newColor[1] + '&b=' + newColor[2] + '&duration=1000', function() {
+			lb.style.backgroundColor = 'rgb(' + newColor[0] + ', ' + newColor[1] + ', ' + newColor[2] + ')';
+		}, error);
 	});
 
-	refreshButton.addEventListener('click', function(e) {
+	refreshbtn.addEventListener('click', function(e) {
 		update();
 	});
 
 	function error(response) {
-		message.textContent = 'Error: ' + (error.response || 'unknown error');
-		message.style.display = 'block';
+		msg.textContent = 'Error: ' + (error.response || 'unknown error');
+		msg.style.display = 'block';
 	}
 
 	function update() {
 		ajax('GET', '/status', function(response) {
 			var status = JSON.parse(response);
-			lightbox.style.backgroundColor = 'rgb(' + status.color.r + ',' + status.color.g + ',' + status.color.b + ')';
-			message.style.display = 'none';
+			lb.style.backgroundColor = 'rgb(' + status.color.r + ',' + status.color.g + ',' + status.color.b + ')';
+			msg.style.display = 'none';
 		}, error);
 	}
 
