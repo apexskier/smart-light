@@ -37,6 +37,7 @@ void handle404();
 void handleColor();
 void handleOff();
 void handleStartAlarm();
+void handleStatus();
 void handleRoot();
 
 // LED manipulation over PWM
@@ -122,6 +123,7 @@ void setup() {
 
   // webserver routing
   server.on("/", handleRoot);
+  server.on("/status", handleStatus);
   server.on("/off", handleOff);
   server.on("/sunrise", handleStartAlarm);
   server.on("/color", handleColor);

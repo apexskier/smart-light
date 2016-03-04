@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Smart Light</title>
+	<style>
+	body {
+		font-family: sans-serif;
+		color: #222;
+		padding: 10px 15px;
+	}
+	.lightbox-container {
+		width: 100%;
+		text-align: center;
+		margin-bottom: 10px;
+	}
+	#lightbox {
+		margin: 0 auto;
+		height: 100px;
+		width: 100px;
+		border-radius: 4px;
+		border: 1px solid #222;
+	}
+	#preview {
+		display: inline-block;
+		background-color: rgb(255, 255, 255);
+		height: 1em;
+		width: 1em;
+		margin-left: .5em;
+		vertical-align: text-bottom;
+	}
+	#message {
+		border-radius: 2px;
+		background-color: rgb(255, 205, 205);
+		color: rgb(158, 0, 0);
+		border: 1px solid;
+		padding: 4px 8px;
+		display: none;
+	}
+	</style>
+</head>
+<body>
+	<h1>Smart Light</h1>
+	<p id="message"></p>
+	<div class="lightbox-container">
+		<div id="lightbox"></div>
+	</div>
+	<p><button id="turnOff">Off</button> <button id="refresh">Refresh</button></p>
+	<p>
+		Red <input id="red" value="255" type="range" step="1" min="0" max="255"><br>
+		Green <input id="green" value="255" type="range" step="1" min="0" max="255"><br>
+		Blue <input id="blue" value="255" type="range" step="1" min="0" max="255"><br>
+	</p>
+	<p><button id="setButton">Set</button> <span id="preview"></span></p>
+	<script>
+	var lightbox = document.getElementById('lightbox');
+	var message = document.getElementById('message');
+	var preview = document.getElementById('preview');
+	var redSlider = document.getElementById('red');
+	var blueSlider = document.getElementById('blue');
+	var greenSlider = document.getElementById('green');
+
+	var offButton = document.getElementById('turnOff');
+	var refreshButton = document.getElementById('refresh');
+	var setButton = document.getElementById('setButton');
+
+	var newColor = [255,255,255];
+
+	function setPreview() {
+		preview.style.backgroundColor = 'rgb(' + newColor[0] + ',' + newColor[1] + ',' + newColor[2] + ')';
+	}
+	redSlider.addEventListener('input', function(e) {
+		newColor[0] = e.target.value;
+		setPreview();
+	});
+	greenSlider.addEventListener('input', function(e) {
+		newColor[1] = e.target.value;
+		setPreview();
+	});
+	blueSlider.addEventListener('input', function(e) {
+		newColor[2] = e.target.value;
+		setPreview();
+	});
+
+	offButton.addEventListener('click', function(e) {
+		ajax('POST', '/off?duration=1000', update, error);
+	});
+
+	setButton.addEventListener('click', function(e) {
+		ajax('POST', '/color?r=' + newColor[0] + '&g=' + newColor[1] + '&b=' + newColor[2] + '&duration=1000', update, error);
+	});
+
+	refreshButton.addEventListener('click', function(e) {
+		update();
+	});
+
+	function error(response) {
+		message.textContent = 'Error: ' + (error.response || 'unknown error');
+		message.style.display = 'block';
+	}
+
+	function update() {
+		ajax('GET', '/status', function(response) {
+			var status = JSON.parse(response);
+			lightbox.style.backgroundColor = 'rgb(' + status.color.r + ',' + status.color.g + ',' + status.color.b + ')';
+			message.style.display = 'none';
+		}, error);
+	}
+
+	// http://stackoverflow.com/questions/8567114/how-to-make-an-ajax-call-without-jquery
+	function ajax(method, url, success, error) {
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
+				if (xmlhttp.status == 200) {
+					success(xmlhttp.responseText);
+				} else {
+					error(xmlhttp);
+				}
+			}
+		}
+
+		xmlhttp.open(method, url, true);
+		xmlhttp.send();
+	}
+	</script>
+</body>
+</html>
