@@ -38,6 +38,7 @@ void handleColor();
 void handleOff();
 void handleStartAlarm();
 void handleStatus();
+void handleAppIcon();
 void handleRoot();
 
 // LED manipulation over PWM
