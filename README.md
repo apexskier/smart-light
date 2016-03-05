@@ -11,7 +11,19 @@ I ended up deciding on using an LED, and then decided on an RGB LED. This means
 I can do color, so I decided to turn it into a [wake up
 light](https://www.usa.philips.com/c-m-li/light-therapy/wake-up-light/latest#filters=WAKEUP_LIGHT_SU&sliders=&support=&price=&priceBoxes=&page=&layout=12.subcategory.p-grid-icon).
 
+## UI
+
+The light provides a web UI intended to be installed to your phone's
+homescreen, as well as several HTTP routes for control.
+
+Visit the IP of your light to see it.
+
+![Web UI]
+
 ## Dev notes
+
+Set your wifi network's ssid and password in `light.ino` and don't commit it to
+git.
 
 I increased the [number of possible
 alarms](https://github.com/PaulStoffregen/TimeAlarms/blob/master/TimeAlarms.h#L10)
