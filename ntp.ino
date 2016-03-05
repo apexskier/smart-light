@@ -2,6 +2,7 @@ bool waitingForTime = false;
 bool nextUDPTest = 0;
 int numUDPTests = 0;
 const int TIMEZONE_OFFSET = -7;  // Pacific Daylight Time (USA)
+int backoff = 1000;
 
 void setupTime() {
   syncTimeStart();
@@ -42,11 +43,12 @@ void digitalClockDisplay(){
 void timeLoopCall() {
   // wait to see if a reply is available
   if (waitingForTime && current_millis > nextUDPTest) {
-    if (numUDPTests > 10) {
+    if (numUDPTests > 16) {
       syncTimeStart();
     }
     numUDPTests++;
-    nextUDPTest = current_millis + 1000;
+    nextUDPTest = current_millis + backoff;
+    backoff *= 2;
 
     int cb = udp.parsePacket();
     if (!cb) {

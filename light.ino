@@ -4,6 +4,7 @@
 #include <WiFiUdp.h>
 #include <TimeLib.h>
 #include <TimeAlarms.h>
+#include <limits.h>
 #include "color.h"
 
 #define TOUCH_PIN 16
@@ -70,7 +71,7 @@ const int SUNRISE_STATE = -2;
 const int CUSTOM_STATE = -3;
 const int SPARKLE_STATE = -4;
 const int RAINBOW_STATE = -5;
-int state = 0;
+int state = OFF_STATE;
 
 // globals to handle touch sensor
 int wasTouching = 0;
@@ -128,8 +129,6 @@ void setup() {
   if (MDNS.begin("esp8266")) {
     Serial.println("MDNS responder started");
   }
-
-  server.close(); // flush old stuff from the server
 
   // webserver routing
   server.on("/", handleRoot);
@@ -221,6 +220,10 @@ void colorLoopCall() {
     case RAINBOW_STATE:
       hue = float(current_millis % transitionSpeed) / transitionSpeed;
       newColor = hsv_to_rgb({hue, 1, 1});
+      Serial.print("rainbow: ");
+      Serial.print(hue);
+      Serial.print(", ");
+      Serial.println(rgb_to_hex(newColor), HEX);
       break;
     default:
       newColor = interpolateColor(transitionStartColor, transitionEndColor, percent);
@@ -261,11 +264,13 @@ void startSunrise(unsigned long duration) {
 
 void startSparkling() {
   state = SPARKLE_STATE;
+  transitionEndTime = ULONG_MAX;
 }
 
 void startRainbow(unsigned long speed) {
   state = RAINBOW_STATE;
   transitionSpeed = speed;
+  transitionEndTime = ULONG_MAX;
 }
 
 // default sunrise

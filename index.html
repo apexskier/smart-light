@@ -2,69 +2,35 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<title>💡</title>
 	<style>
 	* {
 		box-sizing: border-box;
 	}
+	html, body {
+		overflow: hidden;
+		height: 100%;
+		width: 100%;
+		position: fixed;
+		-webkit-user-select: none;
+		user-select: none;
+		-webkit-tap-highlight-color: rgba(0,0,0,0);
+	}
 	body {
 		font-family: -apple-system, "Helvetica Neue", "Lucida Grande", sans-serif;
 		color: #eee;
-		padding: 24px 16px;
 		margin: 0;
 		font-size: 28px;
 		background-color: #000;
-	}
-	h1 {
-		font-size: 30px;
-		margin-top: 0;
+		-webkit-user-select: none;
+		user-select: none;
+		-webkit-tap-highlight-color: rgba(0,0,0,0);
 	}
 	p {
-		margin-top: 0;
-		margin-bottom: .5em;
-		text-align: center;
-	}
-	.lb-c {
-		width: 100%;
-		text-align: center;
-		margin-bottom: 10px;
-	}
-	.ctl {
-		padding-top: 32px;
-	}
-	.ctl2 {
-		padding-top: 16px;
-		padding-bottom: 8px;
-	}
-	.e {
-		font-family: 'AppleColorEmoji', default;
-		position: relative;
-		font-size: 16px;
-		transform: scale(2);
-		display: inline-block;
-		width: 32px;
-		height: 32px;
-		margin: 0 32px;
-	}
-	#lb {
-		margin: 0 auto;
-		height: 100px;
-		width: 100px;
-		background-color: rgb(INITIAL_COLOR);
-	}
-	#pv {
-		display: inline-block;
-		background-color: rgb(255, 255, 255);
-		height: 1em;
-		width: 50%;
-		vertical-align: text-bottom;
-	}
-	#lb,
-	#pv {
-		border-radius: 4px;
-		border: 1px solid #eee;
+		margin: 0;
 	}
 	#msg {
 		border-bottom-left-radius: 2px;
@@ -75,46 +41,110 @@
 		border-top: none;
 		padding: 4px 8px;
 		font-size: 18px;
-		text-align: left;
 		position: absolute;
 		top: 0;
 		left: 15px;
 		right: 15px;
-		transition: transform 400ms 0ms;
+		transition: transform 400ms 0ms ease-in-out;
 	}
 	#msg.hide {
-		transition: transform 400ms 0ms;
 		transform: translateY(-100%);
 	}
+	.c {
+		position: relative;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+	.lb-c {
+		width: 100%;
+		text-align: center;
+	}
+	#lb {
+		height: 100px;
+		width: 100px;
+		margin: 0 auto;
+		transition: background-color 500ms ease-in-out;
+		border-radius: 4px;
+		border: 1px solid #eee;
+		background-color: rgb(INITIAL_COLOR);
+	}
+	.ctl {
+		display: flex;
+		justify-content: space-around;
+	}
+	.e {
+		font-family: 'AppleColorEmoji', default;
+		position: relative;
+		font-size: 16px;
+		line-height: 16px;
+		width: 16px;
+		height: 16px;
+	}
+	.e > div {
+		transform: scale(3);
+    transform-origin: 50% 50%;
+    height: 16px;
+    padding-top: 6px;
+    padding-right: 23px;
+    width: 16px;
+    display: inline-block;
+    vertical-align: middle;
+		transition: text-shadow 400ms 100ms ease-in-out;
+	}
+	.e > div.touching,
+	.e.touching > div {
+		transition: text-shadow 50ms ease-in-out;
+		text-shadow: 0 0 10px #fff;
+	}
+	.input {
+		height: 48px;
+		position: relative;
+	}
+	#pv {
+		background-color: rgb(255, 255, 255);
+		position: relative;
+	}
+	#pv,
 	input[type=range] {
 		-webkit-appearance: none;
 		width: 100%;
-		margin-bottom: 12px;
+		height: 100%;
+	}
+	input[type=range] {
+		background-color: transparent;
 	}
 	input[type=range]:focus {
 		outline: none;
 	}
+	#pv,
 	input[type=range]::-webkit-slider-runnable-track {
-		width: 100%;
-		height: 4px;
-		border-radius: 2px;
+		height: 48px;
 		cursor: pointer;
-		background: #999;
-		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.4);
+		padding: 6px 8px 6px 4px;
+		display: block;
+	}
+	input[type=range]::-webkit-slider-runnable-track {
+		background-color: transparent;
 	}
 	input[type=range]::-webkit-slider-thumb {
-		box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+		/*box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);*/
 		height: 32px;
 		width: 32px;
 		border-radius: 16px;
-		background: #aaa;
 		cursor: pointer;
 		-webkit-appearance: none;
-		margin-top: -14px;
 		background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
 	}
-	input[type=range]:focus::-webkit-slider-runnable-track {
-		background: #222;
+	#input-r {
+		background-image: linear-gradient(to right, rgb(0, 255, 255) 0%, rgb(255, 255, 255) 100%);
+	}
+	#input-g {
+		background-image: linear-gradient(to right, rgb(255, 0, 255) 0%, rgb(255, 255, 255) 100%);
+	}
+	#input-b {
+		background-image: linear-gradient(to right, rgb(255, 255, 0) 0%, rgb(255, 255, 255) 100%);
 	}
 	input#red[type=range]::-webkit-slider-thumb {
 		border: 1px solid #aa0000;
@@ -132,23 +162,27 @@
 </head>
 <body>
 	<p id="msg" class="hide"></p>
-	<div class="lb-c">
-		<div id="lb"></div>
+	<div class="c">
+		<div></div>
+		<div class="lb-c">
+			<div id="lb"></div>
+		</div>
+		<div class="ctl">
+			<div id="sr" class="e"><div>&#127749;</div></div>
+			<div id="rb" class="e"><div>&#127752;</div></div>
+			<div id="spkl" class="e"><div>&#10024;</div></div>
+		</div>
+		<div class="ctl">
+			<div id="turnOff" class="e"><div>&#128244;</div></div>
+			<div id="refresh" class="e"><div>&#128260;</div></div>
+		</div>
+		<div class="m">
+			<div id="input-r" class="input"><input id="red" value="255" type="range" step="1" min="0" max="255"></div>
+			<div id="input-g" class="input"><input id="green" value="255" type="range" step="1" min="0" max="255"></div>
+			<div id="input-b" class="input"><input id="blue" value="255" type="range" step="1" min="0" max="255"></div>
+			<div id="pv"></div>
+		</div>
 	</div>
-	<p>
-		<input id="red" value="255" type="range" step="1" min="0" max="255"><br>
-		<input id="green" value="255" type="range" step="1" min="0" max="255"><br>
-		<input id="blue" value="255" type="range" step="1" min="0" max="255"><br>
-	</p>
-	<p class="ctl">
-		<span id="sr" class="e">&#127749;</span><span id="rb" class="e">&#127752;</span><span id="spkl" class="e">&#10024;</span>
-	</p>
-	<p class="ctl2">
-		<span id="setbtn" class="e">&#128678;</span><span id="turnOff" class="e">&#128244;</span><span id="refresh" class="e">&#128260;</span>
-	</p>
-	<p>
-		<span id="pv"></span>
-	</p>
 	<script>
 	var lb = document.getElementById('lb');
 	var msg = document.getElementById('msg');
@@ -156,18 +190,39 @@
 	var rs = document.getElementById('red');
 	var bs = document.getElementById('blue');
 	var gs = document.getElementById('green');
+	var ri = document.getElementById('input-r');
+	var bi = document.getElementById('input-b');
+	var gi = document.getElementById('input-g');
 
 	var rb = document.getElementById('rb');
 	var spkl = document.getElementById('spkl');
 	var sr = document.getElementById('sr');
 	var offbtn = document.getElementById('turnOff');
 	var refreshbtn = document.getElementById('refresh');
-	var setbtn = document.getElementById('setbtn');
+
+	document.ontouchstart = function(e) {
+    e.preventDefault();
+	}
+	document.ontouchmove = function(e) {
+    e.preventDefault();
+	}
 
 	var newColor = [255,255,255];
 
 	function setpv() {
 		pv.style.backgroundColor = 'rgb(' + newColor[0] + ',' + newColor[1] + ',' + newColor[2] + ')';
+
+		var ril = '0,' + newColor[1] + ',' + newColor[2];
+		var rir = '255,' + newColor[1] + ',' + newColor[2];
+		ri.style.backgroundImage = 'linear-gradient(to right,rgb(' + ril + ') 0%,rgb(' + rir + ') 100%)';
+
+		var gil = newColor[0] + ',0,' + newColor[2];
+		var gir = newColor[0] + ',255,' + newColor[2];
+		gi.style.backgroundImage = 'linear-gradient(to right,rgb(' + gil + ') 0%,rgb(' + gir + ') 100%)';
+
+		var bil = newColor[0] + ',' + newColor[1] + ',0';
+		var bir = newColor[0] + ',' + newColor[1] + ',255';
+		bi.style.backgroundImage = 'linear-gradient(to right,rgb(' + bil + ') 0%,rgb(' + bir + ') 100%)';
 	}
 	rs.addEventListener('input', function(e) {
 		newColor[0] = e.target.value;
@@ -182,6 +237,16 @@
 		setpv();
 	});
 
+	[].forEach.call(document.querySelectorAll('.e'), function (el) {
+		console.log(el);
+		el.addEventListener('touchstart', function(e) {
+			e.target.classList.add('touching');
+		});
+		el.addEventListener('touchend', function(e) {
+			e.target.classList.remove('touching');
+		});
+	});
+
 	offbtn.addEventListener('click', off);
 	offbtn.addEventListener('touchend', off);
 	function off(e) {
@@ -191,8 +256,8 @@
 		e.preventDefault();
 	}
 
-	setbtn.addEventListener('click', set);
-	setbtn.addEventListener('touchend', set);
+	pv.addEventListener('click', set);
+	pv.addEventListener('touchend', set);
 	function set(e) {
 		ajax('POST', '/color?r=' + newColor[0] + '&g=' + newColor[1] + '&b=' + newColor[2] + '&duration=1000', function() {
 			lb.style.backgroundColor = 'rgb(' + newColor[0] + ', ' + newColor[1] + ', ' + newColor[2] + ')';
