@@ -141,15 +141,6 @@ void setup() {
   server.onNotFound(handle404);
   server.begin();
   Serial.println("HTTP server started");
-
-  // alarms
-  Alarm.alarmRepeat(dowMonday, 6, 0, 0, wakeupAlarm);
-  Alarm.alarmRepeat(dowTuesday, 6, 0, 0, wakeupAlarm);
-  Alarm.alarmRepeat(dowWednesday, 6, 0, 0, wakeupAlarm);
-  Alarm.alarmRepeat(dowThursday, 6, 0, 0, wakeupAlarm);
-  Alarm.alarmRepeat(dowFriday, 6, 0, 0, wakeupAlarm);
-
-  Alarm.alarmRepeat(dowThursday, 20, 30, 0, wakeupAlarm);
 }
 
 void loop() {
@@ -275,6 +266,7 @@ void startRainbow(unsigned long speed) {
 
 // default sunrise
 void wakeupAlarm() {
+  Serial.println("Wake up!");
   startSunrise(1000 * 60 * 30);
 }
 

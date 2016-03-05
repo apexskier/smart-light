@@ -3,6 +3,7 @@ bool nextUDPTest = 0;
 int numUDPTests = 0;
 const int TIMEZONE_OFFSET = -7;  // Pacific Daylight Time (USA)
 int backoff = 1000;
+bool alarmsSet;
 
 void setupTime() {
   syncTimeStart();
@@ -44,7 +45,9 @@ void timeLoopCall() {
   // wait to see if a reply is available
   if (waitingForTime && current_millis > nextUDPTest) {
     if (numUDPTests > 16) {
+      numUDPTests = 0;
       syncTimeStart();
+      return;
     }
     numUDPTests++;
     nextUDPTest = current_millis + backoff;
@@ -79,12 +82,57 @@ void timeLoopCall() {
       Serial.println(epoch);
 
       waitingForTime = false;
-      Alarm.timerOnce(10000, syncTimeStart);
       setTime(epoch);
       adjustTime(TIMEZONE_OFFSET * SECS_PER_HOUR);
       bool dst = true;
       if (dst) adjustTime(-SECS_PER_HOUR);
       digitalClockDisplay();
+
+      if (!alarmsSet) {
+        if (Alarm.timerRepeat(1000 * 60 * 60, syncTimeStart) == dtINVALID_ALARM_ID) {
+          Serial.println("Failed to create NTP repeat");
+        } else {
+          Serial.println("Set up NTP repeat");
+        }
+  
+        // alarms
+        if (Alarm.alarmRepeat(dowMonday, 5, 30, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
+          Serial.println("Failed to create Monday alarm");
+        } else {
+          Serial.println("Created Monday alarm");
+        }
+        if (Alarm.alarmRepeat(dowTuesday, 5, 30, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
+          Serial.println("Failed to create Tuesday alarm");
+        } else {
+          Serial.println("Created Tuesday alarm");
+        }
+        if (Alarm.alarmRepeat(dowWednesday, 5, 30, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
+          Serial.println("Failed to create Wednesday alarm");
+        } else {
+          Serial.println("Created Wednesday alarm");
+        }
+        if (Alarm.alarmRepeat(dowThursday, 5, 30, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
+          Serial.println("Failed to create Thursday alarm");
+        } else {
+          Serial.println("Created Thursday alarm");
+        }
+        if (Alarm.alarmRepeat(dowFriday, 5, 30, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
+          Serial.println("Failed to create Friday alarm");
+        } else {
+          Serial.println("Created Friday alarm");
+        }
+  
+//        // test
+//        if (Alarm.alarmRepeat(hour(), minute() + 1, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
+//          Serial.print("Failed to create test alarm for");
+//          Serial.println(String(hour()) + ": " + String(minute() + 1));
+//        } else {
+//          Serial.print("Created test alarm for");
+//          Serial.println(String(hour()) + ": " + String(minute() + 1));
+//        }
+
+        alarmsSet = true;
+      }
     }
   }
 }
