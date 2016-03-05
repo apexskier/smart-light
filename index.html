@@ -52,7 +52,7 @@
 		margin: 0 auto;
 		height: 100px;
 		width: 100px;
-		background-color: rgb(INITIAL_R, INITIAL_G, INITIAL_B);
+		background-color: rgb(INITIAL_COLOR);
 	}
 	#pv {
 		display: inline-block;
@@ -203,21 +203,21 @@
 	rb.addEventListener('click', rbAction);
 	rb.addEventListener('touchend', rbAction);
 	function rbAction(e) {
-		ajax('POST', '/rainbow/start');
+		ajax('POST', '/rainbow');
 		e.preventDefault();
 	}
 
 	spkl.addEventListener('click', spklAction);
 	spkl.addEventListener('touchend', spklAction);
 	function spklAction(e) {
-		ajax('POST', '/sparkle/start');
+		ajax('POST', '/sparkle');
 		e.preventDefault();
 	}
 
 	sr.addEventListener('click', srAction);
 	sr.addEventListener('touchend', srAction);
 	function srAction(e) {
-		ajax('POST', '/alarm/start');
+		ajax('POST', '/sunrise');
 		e.preventDefault();
 	}
 

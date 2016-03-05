@@ -37,13 +37,16 @@ void handle404();
 void handleColor();
 void handleOff();
 void handleStartAlarm();
+void handleSparkle();
+void handleRainbow();
 void handleStatus();
-void handleAppIcon();
 void handleRoot();
 
 // LED manipulation over PWM
 void startTransition(rgb_color to, unsigned long duration);
 void startSunrise(unsigned long duration);
+void startSparkling();
+void startRainbow(unsigned long speed);
 void wakeupAlarm();
 void writeOff();
 void writeColor(rgb_color color);
@@ -56,6 +59,7 @@ rgb_color transitionStartColor = {0, 0, 0};
 rgb_color transitionEndColor = {0, 0, 0};
 unsigned long transitionStartTime  = 0;
 unsigned long transitionEndTime = 0;
+unsigned long transitionSpeed = 0;
 void touchLoopCall();
 
 // lamp states
@@ -64,6 +68,8 @@ const int OFF_STATE = 0;
 const int INVALID_STATE = -1;
 const int SUNRISE_STATE = -2;
 const int CUSTOM_STATE = -3;
+const int SPARKLE_STATE = -4;
+const int RAINBOW_STATE = -5;
 int state = 0;
 
 // globals to handle touch sensor
@@ -123,11 +129,15 @@ void setup() {
     Serial.println("MDNS responder started");
   }
 
+  server.close(); // flush old stuff from the server
+
   // webserver routing
   server.on("/", handleRoot);
   server.on("/status", handleStatus);
   server.on("/off", handleOff);
   server.on("/sunrise", handleStartAlarm);
+  server.on("/sparkle", handleSparkle);
+  server.on("/rainbow", handleRainbow);
   server.on("/color", handleColor);
   server.onNotFound(handle404);
   server.begin();
@@ -172,7 +182,7 @@ void touchLoopCall() {
       // increment state by one (loop down at max) unless it's been off for a while
       // then turn off
       state = int(current_millis <= lastTouch | state == OFF_STATE) * (state + 1) % DIM_STATES;
-      byte intensity = byte(scaledPWM(float(state) / float(DIM_STATES - 1)));
+      byte intensity = byte((float(state) / float(DIM_STATES - 1)) * 255);
       rgb_color newColor = (rgb_color) {intensity, intensity, intensity};
 
       // fade to next dim level (or off)
@@ -197,16 +207,29 @@ void colorLoopCall() {
     constrain(percent, 0, 1);
 
     rgb_color newColor;
-    if (state == SUNRISE_STATE) {
-      newColor = sunriseInterpolation(percent);
-    } else {
-      newColor = interpolateColor(transitionStartColor, transitionEndColor, percent);
-    }
+    byte randByte;
+    float hue;
 
-    Serial.print("transition: ");
-    Serial.print(percent * 100);
-    Serial.print("%, ");
-    Serial.println(rgb_to_hex(newColor), HEX);
+    switch (state) {
+    case SUNRISE_STATE:
+      newColor = sunriseInterpolation(percent);
+      break;
+    case SPARKLE_STATE:
+      randByte = byte(random(100, 255));
+      newColor = {randByte, randByte, randByte};
+      break;
+    case RAINBOW_STATE:
+      hue = float(current_millis % transitionSpeed) / transitionSpeed;
+      newColor = hsv_to_rgb({hue, 1, 1});
+      break;
+    default:
+      newColor = interpolateColor(transitionStartColor, transitionEndColor, percent);
+
+      Serial.print("transition: ");
+      Serial.print(percent * 100);
+      Serial.print("%, ");
+      Serial.println(rgb_to_hex(newColor), HEX);
+    }
 
     writeColor(newColor);
   } else if (!equals(transitionEndColor, currentColor)) {
@@ -236,6 +259,15 @@ void startSunrise(unsigned long duration) {
   Serial.println("Started sunrise");
 }
 
+void startSparkling() {
+  state = SPARKLE_STATE;
+}
+
+void startRainbow(unsigned long speed) {
+  state = RAINBOW_STATE;
+  transitionSpeed = speed;
+}
+
 // default sunrise
 void wakeupAlarm() {
   startSunrise(1000 * 60 * 30);
@@ -251,9 +283,9 @@ void writeOff() {
 
 void writeColor(rgb_color color) {
   currentColor = color;
-  analogWrite(R_PIN, PWMRANGE_CUSTOM - color.r);
-  analogWrite(G_PIN, PWMRANGE_CUSTOM - color.g);
-  analogWrite(B_PIN, PWMRANGE_CUSTOM - color.b);
+  analogWrite(R_PIN, PWMRANGE_CUSTOM - scaledPWM(float(color.r) / 255));
+  analogWrite(G_PIN, PWMRANGE_CUSTOM - scaledPWM(float(color.g) / 255));
+  analogWrite(B_PIN, PWMRANGE_CUSTOM - scaledPWM(float(color.b) / 255));
 }
 
 uint scaledPWM(float intensity) {
