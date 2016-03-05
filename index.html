@@ -200,11 +200,17 @@
 	var offbtn = document.getElementById('turnOff');
 	var refreshbtn = document.getElementById('refresh');
 
+	// prevent document scroll
 	document.ontouchstart = function(e) {
-    e.preventDefault();
+		console.log(e);
+		if (e.target.nodeName !== 'INPUT') {
+			e.preventDefault();
+		}
 	}
 	document.ontouchmove = function(e) {
-    e.preventDefault();
+		if (e.target.nodeName !== 'INPUT') {
+			e.preventDefault();
+		}
 	}
 
 	var newColor = [255,255,255];
