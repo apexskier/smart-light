@@ -5,7 +5,7 @@ void handleRoot() {
   // TODO: I bet there's a better way to log (get full url or something)
   Serial.println(server.method() + " /");
   if (server.method() == HTTP_GET) {
-    server.send(200, "text/html", index_html_head + String(currentColor.r) + "," + String(currentColor.g) + "," + String(currentColor.r) + index_html_tail);
+    server.send(200, "text/html", index_html_head + String(currentColor.r) + "," + String(currentColor.g) + "," + String(currentColor.b) + index_html_tail);
   } else {
     server.send(405, "text/plain", "{\"error\":\"method not allowed\"}");
   }
