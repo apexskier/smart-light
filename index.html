@@ -3,13 +3,19 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
 	<title>💡</title>
 	<style>
+	* {
+		box-sizing: border-box;
+	}
 	body {
 		font-family: -apple-system, "Helvetica Neue", "Lucida Grande", sans-serif;
-		color: #222;
-		padding: 10px 15px;
+		color: #eee;
+		padding: 24px 16px;
+		margin: 0;
 		font-size: 28px;
+		background-color: #000;
 	}
 	h1 {
 		font-size: 30px;
@@ -25,12 +31,27 @@
 		text-align: center;
 		margin-bottom: 10px;
 	}
+	.ctl {
+		padding-top: 32px;
+	}
+	.ctl2 {
+		padding-top: 16px;
+		padding-bottom: 8px;
+	}
+	.e {
+		font-family: 'AppleColorEmoji', default;
+		position: relative;
+		font-size: 16px;
+		transform: scale(2);
+		display: inline-block;
+		width: 32px;
+		height: 32px;
+		margin: 0 32px;
+	}
 	#lb {
 		margin: 0 auto;
 		height: 100px;
 		width: 100px;
-		border-radius: 4px;
-		border: 1px solid #222;
 		background-color: rgb(INITIAL_R, INITIAL_G, INITIAL_B);
 	}
 	#pv {
@@ -38,18 +59,32 @@
 		background-color: rgb(255, 255, 255);
 		height: 1em;
 		width: 50%;
-		border-radius: 4px;
 		vertical-align: text-bottom;
 	}
+	#lb,
+	#pv {
+		border-radius: 4px;
+		border: 1px solid #eee;
+	}
 	#msg {
-		border-radius: 2px;
+		border-bottom-left-radius: 2px;
+		border-bottom-right-radius: 2px;
 		background-color: rgb(255, 205, 205);
 		color: rgb(158, 0, 0);
 		border: 1px solid;
+		border-top: none;
 		padding: 4px 8px;
-		display: none;
 		font-size: 18px;
 		text-align: left;
+		position: absolute;
+		top: 0;
+		left: 15px;
+		right: 15px;
+		transition: transform 400ms 0ms;
+	}
+	#msg.hide {
+		transition: transform 400ms 0ms;
+		transform: translateY(-100%);
 	}
 	input[type=range] {
 		-webkit-appearance: none;
@@ -69,13 +104,13 @@
 	}
 	input[type=range]::-webkit-slider-thumb {
 		box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
-		height: 24px;
-		width: 24px;
-		border-radius: 12px;
+		height: 32px;
+		width: 32px;
+		border-radius: 16px;
 		background: #aaa;
 		cursor: pointer;
 		-webkit-appearance: none;
-		margin-top: -10px;
+		margin-top: -14px;
 		background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
 	}
 	input[type=range]:focus::-webkit-slider-runnable-track {
@@ -96,8 +131,7 @@
 	</style>
 </head>
 <body>
-	<h1>Smart Light &#128161;</h1>
-	<p id="msg"></p>
+	<p id="msg" class="hide"></p>
 	<div class="lb-c">
 		<div id="lb"></div>
 	</div>
@@ -107,11 +141,10 @@
 		<input id="blue" value="255" type="range" step="1" min="0" max="255"><br>
 	</p>
 	<p class="ctl">
-		<span id="turnOff">&#128244;</span>
-		&nbsp;&nbsp;
-		<span id="refresh">&#128260;</span>
-		&nbsp;&nbsp;
-		<span id="setbtn">&#10024;</span>
+		<span id="sr" class="e">&#127749;</span><span id="rb" class="e">&#127752;</span><span id="spkl" class="e">&#10024;</span>
+	</p>
+	<p class="ctl2">
+		<span id="setbtn" class="e">&#128678;</span><span id="turnOff" class="e">&#128244;</span><span id="refresh" class="e">&#128260;</span>
 	</p>
 	<p>
 		<span id="pv"></span>
@@ -124,6 +157,9 @@
 	var bs = document.getElementById('blue');
 	var gs = document.getElementById('green');
 
+	var rb = document.getElementById('rb');
+	var spkl = document.getElementById('spkl');
+	var sr = document.getElementById('sr');
 	var offbtn = document.getElementById('turnOff');
 	var refreshbtn = document.getElementById('refresh');
 	var setbtn = document.getElementById('setbtn');
@@ -146,44 +182,74 @@
 		setpv();
 	});
 
-	offbtn.addEventListener('click', function(e) {
+	offbtn.addEventListener('click', off);
+	offbtn.addEventListener('touchend', off);
+	function off(e) {
 		ajax('POST', '/off?duration=1000', function() {
 			lb.style.backgroundColor = 'rgb(0, 0, 0)';
-		}, error);
-	});
-
-	setbtn.addEventListener('click', function(e) {
-		ajax('POST', '/color?r=' + newColor[0] + '&g=' + newColor[1] + '&b=' + newColor[2] + '&duration=1000', function() {
-			lb.style.backgroundColor = 'rgb(' + newColor[0] + ', ' + newColor[1] + ', ' + newColor[2] + ')';
-		}, error);
-	});
-
-	refreshbtn.addEventListener('click', function(e) {
-		update();
-	});
-
-	function error(response) {
-		msg.textContent = 'Error: ' + (error.response || 'unknown error');
-		msg.style.display = 'block';
+		});
+		e.preventDefault();
 	}
 
-	function update() {
+	setbtn.addEventListener('click', set);
+	setbtn.addEventListener('touchend', set);
+	function set(e) {
+		ajax('POST', '/color?r=' + newColor[0] + '&g=' + newColor[1] + '&b=' + newColor[2] + '&duration=1000', function() {
+			lb.style.backgroundColor = 'rgb(' + newColor[0] + ', ' + newColor[1] + ', ' + newColor[2] + ')';
+		});
+		e.preventDefault();
+	}
+
+	rb.addEventListener('click', rbAction);
+	rb.addEventListener('touchend', rbAction);
+	function rbAction(e) {
+		ajax('POST', '/rainbow/start');
+		e.preventDefault();
+	}
+
+	spkl.addEventListener('click', spklAction);
+	spkl.addEventListener('touchend', spklAction);
+	function spklAction(e) {
+		ajax('POST', '/sparkle/start');
+		e.preventDefault();
+	}
+
+	sr.addEventListener('click', srAction);
+	sr.addEventListener('touchend', srAction);
+	function srAction(e) {
+		ajax('POST', '/alarm/start');
+		e.preventDefault();
+	}
+
+	refreshbtn.addEventListener('click', update);
+	refreshbtn.addEventListener('touchend', update);
+
+	function update(e) {
 		ajax('GET', '/status', function(response) {
 			var status = JSON.parse(response);
 			lb.style.backgroundColor = 'rgb(' + status.color.r + ',' + status.color.g + ',' + status.color.b + ')';
-			msg.style.display = 'none';
-		}, error);
+		});
+		if (e) e.preventDefault();
 	}
 
 	// http://stackoverflow.com/questions/8567114/how-to-make-an-ajax-call-without-jquery
-	function ajax(method, url, success, error) {
+	function ajax(method, url, s, er) {
+		s = s || function() {};
+		er = er || function() {};
+
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange = function() {
 			if (xmlhttp.readyState == XMLHttpRequest.DONE ) {
 				if (xmlhttp.status == 200) {
-					success(xmlhttp.responseText);
+					s(xmlhttp.responseText);
+					msg.classList.add('hide');
 				} else {
-					error(xmlhttp);
+					er(xmlhttp);
+					msg.textContent = 'Error: ' + (xmlhttp.response || 'unknown error');
+					msg.classList.remove('hide');
+					setTimeout(function() {
+						msg.classList.add('hide')
+					}, 2000);
 				}
 			}
 		}

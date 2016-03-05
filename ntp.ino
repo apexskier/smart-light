@@ -35,8 +35,8 @@ void digitalClockDisplay(){
   Serial.print(" ");
   Serial.print(month());
   Serial.print(" ");
-  Serial.print(year()); 
-  Serial.println(); 
+  Serial.print(year());
+  Serial.println();
 }
 
 void timeLoopCall() {
@@ -56,10 +56,10 @@ void timeLoopCall() {
       Serial.println(cb);
       // We've received a packet, read the data from it
       udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-    
+
       //the timestamp starts at byte 40 of the received packet and is four bytes,
       // or two words, long. First, esxtract the two words:
-    
+
       unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
       unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
       // combine the four bytes (two words) into a long integer
@@ -67,7 +67,7 @@ void timeLoopCall() {
       unsigned long secsSince1900 = highWord << 16 | lowWord;
       Serial.print("Seconds since Jan 1 1900 = " );
       Serial.println(secsSince1900);
-    
+
       // now convert NTP time into everyday time:
       Serial.print("Unix time = ");
       // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
@@ -85,8 +85,6 @@ void timeLoopCall() {
       digitalClockDisplay();
     }
   }
-
-  Alarm.delay(0);
 }
 
 // send an NTP request to the time server at the given address

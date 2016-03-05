@@ -90,7 +90,7 @@ void setup() {
 
   // Set PWM max to 255, to match color vals exactly. Easier processing
   analogWriteRange(PWMRANGE_CUSTOM);
-  
+
   writeOff();
   delay(5000); // Wait a moment before starting up
   //testColorSequence();
@@ -149,6 +149,8 @@ void loop() {
   touchLoopCall(); // logic to handle touches
   colorLoopCall(); // logic to fade between colors
   server.handleClient(); // webserver
+
+  Alarm.delay(0); // allow alarm processing
 }
 
 void touchLoopCall() {
@@ -294,4 +296,3 @@ void testColorSequence() {
 
   writeOff();
 }
-
