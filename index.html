@@ -232,6 +232,8 @@
 		if (e) e.preventDefault();
 	}
 
+	var msgTO;
+
 	// http://stackoverflow.com/questions/8567114/how-to-make-an-ajax-call-without-jquery
 	function ajax(method, url, s, er) {
 		s = s || function() {};
@@ -245,9 +247,10 @@
 					msg.classList.add('hide');
 				} else {
 					er(xmlhttp);
+					clearTimeout(msgTO);
 					msg.textContent = 'Error: ' + (xmlhttp.response || 'unknown error');
 					msg.classList.remove('hide');
-					setTimeout(function() {
+					msgTO = setTimeout(function() {
 						msg.classList.add('hide')
 					}, 2000);
 				}
