@@ -31,7 +31,7 @@ void setupTime();
 unsigned long sendNTPpacket(IPAddress& address);
 void syncTimeStart();
 void timeLoopCall();
-void testColorSequence();
+//void testColorSequence();
 
 // Web server functions (server.ino)
 void handle404();
@@ -164,9 +164,9 @@ void touchLoopCall() {
     // don't register multiple touches when the person's touch hasn't ended
     if (touching & !wasTouching) {
       // if we're not in a dim state (e.g. sunrise) set off
-      // this means lamp will turn on to dimmest setting
+      // this means lamp will turn off
       if (state < 0) {
-        state = OFF_STATE;
+        state = DIM_STATES - 1;
       }
 
       // increment state by one (loop down at max) unless it's been off for a while
@@ -203,6 +203,9 @@ void colorLoopCall() {
     switch (state) {
     case SUNRISE_STATE:
       newColor = sunriseInterpolation(percent);
+      if (percent == 1) {
+        state = DIM_STATES - 1; // highest brightness
+      }
       break;
     case SPARKLE_STATE:
       randByte = byte(random(100, 255));
@@ -294,35 +297,35 @@ uint linearPWM(float intensity) {
   return uint(double(PWMRANGE_CUSTOM) * intensity);
 }
 
-void testColorSequence() {
-  writeOff();
-
-  writeColor(hex_to_rgb(0xff0000));
-  delay(1000);
-  writeColor(hex_to_rgb(0x00ff00));
-  delay(1000);
-  writeColor(hex_to_rgb(0x0000ff));
-  delay(1000);
-
-  writeColor(hex_to_rgb(0xffff00));
-  delay(1000);
-  writeColor(hex_to_rgb(0xff00ff));
-  delay(1000);
-  writeColor(hex_to_rgb(0x00ffff));
-  delay(1000);
-
-  writeColor(hex_to_rgb(0xffffff));
-  delay(200);
-  writeColor(hex_to_rgb(0xcccccc));
-  delay(200);
-  writeColor(hex_to_rgb(0x999999));
-  delay(200);
-  writeColor(hex_to_rgb(0x666666));
-  delay(200);
-  writeColor(hex_to_rgb(0x333333));
-  delay(200);
-  writeColor(hex_to_rgb(0x000000));
-  delay(200);
-
-  writeOff();
-}
+//void testColorSequence() {
+//  writeOff();
+//
+//  writeColor(hex_to_rgb(0xff0000));
+//  delay(1000);
+//  writeColor(hex_to_rgb(0x00ff00));
+//  delay(1000);
+//  writeColor(hex_to_rgb(0x0000ff));
+//  delay(1000);
+//
+//  writeColor(hex_to_rgb(0xffff00));
+//  delay(1000);
+//  writeColor(hex_to_rgb(0xff00ff));
+//  delay(1000);
+//  writeColor(hex_to_rgb(0x00ffff));
+//  delay(1000);
+//
+//  writeColor(hex_to_rgb(0xffffff));
+//  delay(200);
+//  writeColor(hex_to_rgb(0xcccccc));
+//  delay(200);
+//  writeColor(hex_to_rgb(0x999999));
+//  delay(200);
+//  writeColor(hex_to_rgb(0x666666));
+//  delay(200);
+//  writeColor(hex_to_rgb(0x333333));
+//  delay(200);
+//  writeColor(hex_to_rgb(0x000000));
+//  delay(200);
+//
+//  writeOff();
+//}
