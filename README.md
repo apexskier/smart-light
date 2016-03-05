@@ -18,7 +18,7 @@ homescreen, as well as several HTTP routes for control.
 
 Visit the IP of your light to see it.
 
-![Web UI]
+![Web UI](https://raw.githubusercontent.com/apexskier/smart-light/master/ui.png)
 
 ## Dev notes
 
