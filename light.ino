@@ -7,10 +7,10 @@
 #include <limits.h>
 #include "color.h"
 
-#define TOUCH_PIN 16
+#define TOUCH_PIN 13
 #define R_PIN 2
 #define G_PIN 4
-#define B_PIN 13
+#define B_PIN 5
 #define PWMRANGE_CUSTOM 255
 
 const char* ssid     = "ssid";
@@ -75,10 +75,12 @@ int state = OFF_STATE;
 
 // globals to handle touch sensor
 int wasTouching = 0;
+unsigned long touchStart = 0;
 unsigned long nextTouch = 0;
 unsigned long lastTouch = 0;
-const unsigned long TOUCH_DELAY = 50;
-const unsigned long STATE_DELAY = 5000;
+const unsigned long TOUCH_DELAY = 50; // poll for touches every 50 ms
+const unsigned long LONG_TOUCH = 1000; // 1 second
+const unsigned long STATE_DELAY = 5000; // turn off on new touches after 5 seconds
 
 // global state of lamp -- should always be in sync with reality
 rgb_color currentColor = {0, 0, 0};
@@ -162,21 +164,30 @@ void touchLoopCall() {
     int touching = digitalRead(TOUCH_PIN);
 
     // don't register multiple touches when the person's touch hasn't ended
-    if (touching & !wasTouching) {
-      // if we're not in a dim state (e.g. sunrise) set off
-      // this means lamp will turn off
-      if (state < 0) {
-        state = DIM_STATES - 1;
+    if (touching) {
+      if (!wasTouching) {
+        touchStart = current_millis;
+
+        // if we're not in a dim state (e.g. sunrise) set off
+        // this means lamp will turn off
+        if (state < 0) {
+          state = DIM_STATES - 1;
+        }
+
+        // increment state by one (loop down at max) unless it's been off for a while
+        // then turn off
+        state = int(current_millis <= lastTouch | state == OFF_STATE) * (state + 1) % DIM_STATES;
+        byte intensity = byte((float(state) / float(DIM_STATES - 1)) * 255);
+        rgb_color newColor = (rgb_color) {intensity, intensity, intensity};
+
+        // fade to next dim level (or off)
+        startTransition(newColor, 500);
+      } else {
+        if (current_millis - touchStart > LONG_TOUCH && state != OFF_STATE) {
+          state = DIM_STATES - 1; // brightest
+          startTransition({255, 255, 255}, 500);
+        }
       }
-
-      // increment state by one (loop down at max) unless it's been off for a while
-      // then turn off
-      state = int(current_millis <= lastTouch | state == OFF_STATE) * (state + 1) % DIM_STATES;
-      byte intensity = byte((float(state) / float(DIM_STATES - 1)) * 255);
-      rgb_color newColor = (rgb_color) {intensity, intensity, intensity};
-
-      // fade to next dim level (or off)
-      startTransition(newColor, 500);
     }
 
     // rate limiting
