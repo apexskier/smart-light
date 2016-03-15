@@ -84,7 +84,7 @@ void timeLoopCall() {
       waitingForTime = false;
       setTime(epoch);
       adjustTime(TIMEZONE_OFFSET * SECS_PER_HOUR);
-      bool dst = true;
+      bool dst = false;
       if (dst) adjustTime(-SECS_PER_HOUR);
       digitalClockDisplay();
 

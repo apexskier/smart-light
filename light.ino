@@ -7,10 +7,10 @@
 #include <limits.h>
 #include "color.h"
 
-#define TOUCH_PIN 13
-#define R_PIN 2
-#define G_PIN 4
-#define B_PIN 5
+#define TOUCH_PIN 4
+#define R_PIN 12
+#define G_PIN 13
+#define B_PIN 14
 #define PWMRANGE_CUSTOM 255
 
 const char* ssid     = "ssid";
@@ -180,6 +180,8 @@ void touchLoopCall() {
         byte intensity = byte((float(state) / float(DIM_STATES - 1)) * 255);
         rgb_color newColor = (rgb_color) {intensity, intensity, intensity};
 
+        Serial.print("state: ");
+        Serial.println(state);
         // fade to next dim level (or off)
         startTransition(newColor, 500);
       } else {
@@ -287,16 +289,16 @@ void wakeupAlarm() {
 void writeOff() {
   currentColor = {0, 0, 0};
   transitionEndTime = 0;
-  analogWrite(R_PIN, PWMRANGE_CUSTOM - 0);
-  analogWrite(G_PIN, PWMRANGE_CUSTOM - 0);
-  analogWrite(B_PIN, PWMRANGE_CUSTOM - 0);
+  analogWrite(R_PIN, /*PWMRANGE_CUSTOM - */0);
+  analogWrite(G_PIN, /*PWMRANGE_CUSTOM - */0);
+  analogWrite(B_PIN, /*PWMRANGE_CUSTOM - */0);
 }
 
 void writeColor(rgb_color color) {
   currentColor = color;
-  analogWrite(R_PIN, PWMRANGE_CUSTOM - scaledPWM(float(color.r) / 255));
-  analogWrite(G_PIN, PWMRANGE_CUSTOM - scaledPWM(float(color.g) / 255));
-  analogWrite(B_PIN, PWMRANGE_CUSTOM - scaledPWM(float(color.b) / 255));
+  analogWrite(R_PIN, /*PWMRANGE_CUSTOM - */scaledPWM(float(color.r) / 255));
+  analogWrite(G_PIN, /*PWMRANGE_CUSTOM - */scaledPWM(float(color.g) / 255));
+  analogWrite(B_PIN, /*PWMRANGE_CUSTOM - */scaledPWM(float(color.b) / 255));
 }
 
 uint scaledPWM(float intensity) {
