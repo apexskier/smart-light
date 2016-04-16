@@ -1,7 +1,7 @@
 rgb_color hex_to_rgb(hex_color color) {
   byte r = (color >> 16) & 0xff;
-  byte b = (color >> 8) & 0xff;
-  byte g = color & 0xff;
+  byte g = (color >> 8) & 0xff;
+  byte b = color & 0xff;
   return (rgb_color) {r, g, b};
   return {0, 0, 0};
 }
