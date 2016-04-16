@@ -24,7 +24,7 @@ ESP8266WebServer server(80);
 
 void (*void_function)();
 
-// Time syncronizing stuff (ntp.ino)
+// Time syncronizing stuff (time.ino)
 const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
 byte packetBuffer[NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 void setupTime();
@@ -32,6 +32,7 @@ unsigned long sendNTPpacket(IPAddress& address);
 void syncTimeStart();
 void timeLoopCall();
 void testColorSequence();
+double lightRedShift(unsigned long currentTime);
 
 // Web server functions (server.ino)
 void handle404();
@@ -347,3 +348,10 @@ void testColorSequence() {
 
   writeOff();
 }
+
+rgb_color redShiftColor() {
+  rgb_color fullRed = {255, 147, 41};
+  rgb_color fullWhite = {255, 255, 255};
+  return interpolateColor(fullRed, fullWhite, lightRedShift(now()));
+}
+

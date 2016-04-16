@@ -4,6 +4,49 @@ int numUDPTests = 0;
 const int TIMEZONE_OFFSET = -7;  // Pacific Daylight Time (USA)
 int backoff = 1000;
 bool alarmsSet;
+const double LATITUDE = 47;
+
+const unsigned long EPOCH_TIME = 0;
+const unsigned long SUMMER_SOLSTICE = 14860800; // 172 * 24 * 60 * 60; // jun 21th
+const unsigned long WINTER_SOLSTICE = 30672000; // 355 * 24 * 60 * 60; // dec 21
+const unsigned long SECONDS_IN_YEAR = 31557600; // astronomical
+
+/**
+ * Returns a float indicating how long the day is relative to 12h/12h
+ * -1 == shortest day
+ * 0 == even day
+ * 1 == longest day
+ */
+double daylightOffset(unsigned long currentTime) {
+  unsigned long timeOffset = currentTime % SECONDS_IN_YEAR;
+  unsigned long result = (abs(WINTER_SOLSTICE - timeOffset) - abs(SUMMER_SOLSTICE - timeOffset)) / (SECONDS_IN_YEAR / 2);
+  return constrain(result, -1, 1);
+}
+
+double dayLength(unsigned long currentTime) {
+  double h = acos(-tan(LATITUDE / 90) * tan(daylightOffset(currentTime)));
+  return (2 * h) / 15;
+}
+
+/**
+ * Returns a float indicating how redshifted the current color is.
+ * 0 = none (white)
+ * 1 = full (red)
+ */
+double lightRedShift(unsigned long currentTime) {
+  double halfDayLength = dayLength(currentTime) / 2;
+  if (halfDayLength == 0) {
+    return 1;
+  }
+  double result = abs(hour(currentTime) + TIMEZONE_OFFSET - 12) / halfDayLength;
+  return constrain(result, 0, 1);
+}
+
+//void testDaylightOffset() {
+//  assert(daylightOffset(SUMMER_SOLSTICE) == 1);
+//  assert(daylightOffset(WINTER_SOLSTICE) == -1);
+//  assert(daylightOffset((SUMMER_SOLSTICE + WINTER_SOLSTICE) / 2) == 0);
+//}
 
 void setupTime() {
   syncTimeStart();
