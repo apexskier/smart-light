@@ -55,6 +55,7 @@ void writeColor(rgb_color color);
 uint scaledPWM(float intensity);
 uint linearPWM(float intensity);
 void colorLoopCall();
+rgb_color redShiftColor(rgb_color normal);
 
 // color transition
 rgb_color transitionStartColor = {0, 0, 0};
@@ -89,6 +90,28 @@ rgb_color currentColor = {0, 0, 0};
 // global time since reset, to avoid calling millis more than once a loop
 unsigned long current_millis = 0;
 
+void testDaylightOffset();
+void testLightRedShift();
+
+void assert(bool result, String msg) {
+  if (!result) {
+    Serial.print("F");
+    Serial.println();
+    Serial.println(msg);
+  } else {
+    Serial.print(".");
+  }
+}
+
+void runTests() {
+  Serial.println("Running tests");
+  testDaylightOffset();
+  testLightRedShift();
+  Serial.println("Done with tests");
+  Serial.println();
+  Serial.println();
+}
+
 void setup() {
   Serial.begin(115200);
   Serial.println();
@@ -104,7 +127,10 @@ void setup() {
 
   writeOff();
   delay(5000); // Wait a moment before starting up
+  digitalRead(TOUCH_PIN); // clear
+
   testColorSequence();
+  //runTests();
 
   // connecting to a WiFi network
   Serial.print("Connecting to ");
@@ -208,6 +234,8 @@ void touchLoopCall() {
 }
 
 void colorLoopCall() {
+  rgb_color newColor;
+  
   // fade to next color without blocking
   if (transitionEndTime > current_millis) {
     unsigned long duration = transitionEndTime - transitionStartTime;
@@ -215,7 +243,6 @@ void colorLoopCall() {
 
     constrain(percent, 0, 1);
 
-    rgb_color newColor;
     byte randByte;
     float hue;
 
@@ -240,23 +267,39 @@ void colorLoopCall() {
       break;
     default:
       newColor = interpolateColor(transitionStartColor, transitionEndColor, percent);
-
-      Serial.print("transition: ");
-      Serial.print(percent * 100);
-      Serial.print("%, ");
-      Serial.println(rgb_to_hex(newColor), HEX);
     }
 
+    if (state > OFF_STATE) {
+      newColor = redShiftColor(newColor);
+    }
     writeColor(newColor);
+
+    Serial.print("transition: ");
+    Serial.print(percent * 100);
+    Serial.print("%, ");
+    Serial.println(rgb_to_hex(newColor), HEX);
   } else if (!equals(transitionEndColor, currentColor)) {
     // ensure we always end on the end color, and don't stop early
+    
     Serial.print("transition: ");
     Serial.print(100);
     Serial.print("%, ");
     Serial.println(rgb_to_hex(transitionEndColor), HEX);
 
-    writeColor(transitionEndColor);
+    newColor = transitionEndColor;
+
+    if (state > OFF_STATE) {
+      newColor = redShiftColor(newColor);
+    }
+
+    // TODO: redshift bugfixing
+    transitionEndColor = newColor;
+    
+    writeColor(newColor);
   }
+  
+
+  //writeColor(newColor);
 }
 
 void startTransition(rgb_color to, unsigned long duration) {
@@ -349,9 +392,17 @@ void testColorSequence() {
   writeOff();
 }
 
-rgb_color redShiftColor() {
+rgb_color redShiftColor(rgb_color normal) {
   rgb_color fullRed = {255, 147, 41};
   rgb_color fullWhite = {255, 255, 255};
-  return interpolateColor(fullRed, fullWhite, lightRedShift(now()));
+  double redShift = lightRedShift(now());
+  Serial.print("redShift: ");
+  Serial.println(redShift);
+  rgb_color shift = interpolateColor(fullWhite, fullRed, redShift);
+  return {
+    byte(double(shift.r) * (double(normal.r) / 255.0)),
+    byte(double(shift.g) * (double(normal.g) / 255.0)),
+    byte(double(shift.b) * (double(normal.b) / 255.0))
+  };
 }
 

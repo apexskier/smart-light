@@ -7,7 +7,7 @@ bool alarmsSet;
 const double LATITUDE = 47;
 
 const unsigned long EPOCH_TIME = 0;
-const unsigned long SUMMER_SOLSTICE = 14860800; // 172 * 24 * 60 * 60; // jun 21th
+const unsigned long SUMMER_SOLSTICE = 14893200; // 172 * 24 * 60 * 60; // jun 21th
 const unsigned long WINTER_SOLSTICE = 30672000; // 355 * 24 * 60 * 60; // dec 21
 const unsigned long SECONDS_IN_YEAR = 31557600; // astronomical
 
@@ -18,14 +18,18 @@ const unsigned long SECONDS_IN_YEAR = 31557600; // astronomical
  * 1 == longest day
  */
 double daylightOffset(unsigned long currentTime) {
-  unsigned long timeOffset = currentTime % SECONDS_IN_YEAR;
-  unsigned long result = (abs(WINTER_SOLSTICE - timeOffset) - abs(SUMMER_SOLSTICE - timeOffset)) / (SECONDS_IN_YEAR / 2);
-  return constrain(result, -1, 1);
+  return cos((currentTime - (SECONDS_IN_YEAR / 2) - WINTER_SOLSTICE) / (SECONDS_IN_YEAR / (2 * PI)));
+}
+
+void testDaylightOffset() {
+  assert(daylightOffset(SUMMER_SOLSTICE) == 1, "summer solstice not 1");
+  assert(daylightOffset(WINTER_SOLSTICE) == -1, "winter solstice not -1");
+  assert(daylightOffset((SUMMER_SOLSTICE + WINTER_SOLSTICE) / 2) == 0, "midpoint not 0");
 }
 
 double dayLength(unsigned long currentTime) {
   double h = acos(-tan(LATITUDE / 90) * tan(daylightOffset(currentTime)));
-  return (2 * h) / 15;
+  return h * (24 / PI);
 }
 
 /**
@@ -34,19 +38,19 @@ double dayLength(unsigned long currentTime) {
  * 1 = full (red)
  */
 double lightRedShift(unsigned long currentTime) {
-  double halfDayLength = dayLength(currentTime) / 2;
-  if (halfDayLength == 0) {
+  double dayLen = dayLength(currentTime);
+  if (dayLen == 0) {
     return 1;
   }
-  double result = abs(hour(currentTime) + TIMEZONE_OFFSET - 12) / halfDayLength;
-  return constrain(result, 0, 1);
+  double result = abs((hour(currentTime) - 12) / (dayLen / 2));
+  return constrain(result, 0.0, 1.0);
 }
 
-//void testDaylightOffset() {
-//  assert(daylightOffset(SUMMER_SOLSTICE) == 1);
-//  assert(daylightOffset(WINTER_SOLSTICE) == -1);
-//  assert(daylightOffset((SUMMER_SOLSTICE + WINTER_SOLSTICE) / 2) == 0);
-//}
+void testLightRedShift() {
+  assert(lightRedShift(1460790000) == 1, "midnight redshift all the way on"); // midnight
+  assert(lightRedShift(1460833200) == 0, "midday redshift off"); // midday
+  assert(lightRedShift(1460847600) == 0.5713196826334157, "4pm partial redshift"); // 4pm
+}
 
 void setupTime() {
   syncTimeStart();
@@ -163,6 +167,11 @@ void timeLoopCall() {
           Serial.println("Failed to create Friday alarm");
         } else {
           Serial.println("Created Friday alarm");
+        }
+        if (Alarm.alarmRepeat(dowSunday, 7, 30, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
+          Serial.println("Failed to create Sunday alarm");
+        } else {
+          Serial.println("Created Sunday alarm");
         }
   
 //        // test
