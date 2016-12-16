@@ -150,9 +150,8 @@ rgb_color multiply(rgb_color one, rgb_color two) {
 rgb_color sunriseInterpolation(float percent) {
   // two parts, tint and darkness
   rgb_color sunriseSteps[SUNRISE_LENGTH] = {
-    {0x00, 0x09, 0xff},
-    {0x68, 0x00, 0xff},
-    {0xd3, 0x00, 0xff},
+    {0xff, 0x00, 0x00},
+    {0xff, 0x00, 0x00},
     {0xff, 0x46, 0x00},
     {0xff, 0xf1, 0x00},
     {0xff, 0xff, 0xff}
@@ -160,10 +159,9 @@ rgb_color sunriseInterpolation(float percent) {
 
   float sunriseBreakpoints[SUNRISE_LENGTH] = {
     0,
-    0.109753667,
-    0.188038106,
-    0.280333227,
-    0.732362085,
+    0.25,
+    0.50,
+    0.75,
     1
   };
 

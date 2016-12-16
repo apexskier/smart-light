@@ -235,7 +235,7 @@ void touchLoopCall() {
 
 void colorLoopCall() {
   rgb_color newColor;
-  
+
   // fade to next color without blocking
   if (transitionEndTime > current_millis) {
     unsigned long duration = transitionEndTime - transitionStartTime;
@@ -280,7 +280,7 @@ void colorLoopCall() {
     Serial.println(rgb_to_hex(newColor), HEX);
   } else if (!equals(transitionEndColor, currentColor)) {
     // ensure we always end on the end color, and don't stop early
-    
+
     Serial.print("transition: ");
     Serial.print(100);
     Serial.print("%, ");
@@ -294,10 +294,10 @@ void colorLoopCall() {
 
     // TODO: redshift bugfixing
     transitionEndColor = newColor;
-    
+
     writeColor(newColor);
   }
-  
+
 
   //writeColor(newColor);
 }
