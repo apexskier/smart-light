@@ -1,12 +1,12 @@
 bool waitingForTime = false;
 bool nextUDPTest = 0;
 int numUDPTests = 0;
-const int TIMEZONE_OFFSET = -7;  // Pacific Daylight Time (USA)
 int backoff = 1000;
 bool alarmsSet;
+const int TIMEZONE_OFFSET = -7;  // Pacific Daylight Time (USA)
 const double LATITUDE = 47;
+const bool DAYLIGHT_SAVINGS = true;
 
-const unsigned long EPOCH_TIME = 0;
 const unsigned long SUMMER_SOLSTICE = 14893200; // 172 * 24 * 60 * 60; // jun 21th
 const unsigned long WINTER_SOLSTICE = 30672000; // 355 * 24 * 60 * 60; // dec 21
 const unsigned long SECONDS_IN_YEAR = 31557600; // astronomical
@@ -44,6 +44,10 @@ double lightRedShift(unsigned long currentTime) {
   }
   double result = abs((hour(currentTime) - 12) / (dayLen / 2));
   return constrain(result, 0.0, 1.0);
+}
+
+bool isDaylightSavingsTime() {
+    return DAYLIGHT_SAVINGS;
 }
 
 void testLightRedShift() {
@@ -131,8 +135,7 @@ void timeLoopCall() {
       waitingForTime = false;
       setTime(epoch);
       adjustTime(TIMEZONE_OFFSET * SECS_PER_HOUR);
-      bool dst = false;
-      if (dst) adjustTime(-SECS_PER_HOUR);
+      if (isDaylightSavingsTime()) adjustTime(-SECS_PER_HOUR);
       digitalClockDisplay();
 
       if (!alarmsSet) {
@@ -141,7 +144,7 @@ void timeLoopCall() {
         } else {
           Serial.println("Set up NTP repeat");
         }
-  
+
         // alarms
         if (Alarm.alarmRepeat(dowMonday, 5, 30, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
           Serial.println("Failed to create Monday alarm");
@@ -173,7 +176,7 @@ void timeLoopCall() {
         } else {
           Serial.println("Created Sunday alarm");
         }
-  
+
 //        // test
 //        if (Alarm.alarmRepeat(hour(), minute() + 1, 0, wakeupAlarm) == dtINVALID_ALARM_ID) {
 //          Serial.print("Failed to create test alarm for");
